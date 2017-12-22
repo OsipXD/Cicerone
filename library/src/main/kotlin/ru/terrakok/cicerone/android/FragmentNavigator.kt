@@ -41,12 +41,12 @@ abstract class FragmentNavigator(
         }
     }
 
-    private fun applyForward(forward: Forward) {
-        val fragment = createFragment(forward.screenKey, forward.transitionData)
+    private fun applyForward(command: Forward) {
+        val fragment = createFragment(command.screenKey, command.transitionData)
         if (fragment != null) {
-            openFragment(forward, fragment)
+            openFragment(command, fragment)
         } else {
-            unknownScreen(forward)
+            unknownScreen(command)
         }
     }
 
@@ -58,17 +58,17 @@ abstract class FragmentNavigator(
         }
     }
 
-    private fun applyReplace(replace: Replace) {
-        val fragment = createFragment(replace.screenKey, replace.transitionData) ?: run {
-            unknownScreen(replace)
+    private fun applyReplace(command: Replace) {
+        val fragment = createFragment(command.screenKey, command.transitionData) ?: run {
+            unknownScreen(command)
             return
         }
 
         if (fragmentManager.backStackEntryCount > 0) {
             fragmentManager.popBackStackImmediate()
-            openFragment(replace, fragment)
+            openFragment(command, fragment)
         } else {
-            openFragment(replace, fragment, addToBackStack = true)
+            openFragment(command, fragment, addToBackStack = false)
         }
     }
 
@@ -121,7 +121,7 @@ abstract class FragmentNavigator(
      */
     protected fun FragmentTransaction.setupAnimation(
             command: CreationalCommand,
-            currentFragment: Fragment,
+            currentFragment: Fragment?,
             nextFragment: Fragment
     ) {
         setupFragmentTransactionAnimation(command, currentFragment, nextFragment, this)
@@ -138,7 +138,7 @@ abstract class FragmentNavigator(
      */
     protected open fun setupFragmentTransactionAnimation(
             command: CreationalCommand,
-            currentFragment: Fragment,
+            currentFragment: Fragment?,
             nextFragment: Fragment,
             fragmentTransaction: FragmentTransaction
     ) {
@@ -155,15 +155,15 @@ abstract class FragmentNavigator(
     @Deprecated("use variant of this function with CreationalCommand instead")
     protected open fun setupFragmentTransactionAnimation(
             command: Command,
-            currentFragment: Fragment,
+            currentFragment: Fragment?,
             nextFragment: Fragment,
             fragmentTransaction: FragmentTransaction
     ) {
         // Do nothing by default
     }
 
-    private fun applyBackTo(backTo: BackTo) {
-        backTo.screenKey?.let { key ->
+    private fun applyBackTo(command: BackTo) {
+        command.screenKey?.let { key ->
             var hasScreen = false
             for (i in 0 until fragmentManager.backStackEntryCount) {
                 if (key == fragmentManager.getBackStackEntryAt(i).name) {

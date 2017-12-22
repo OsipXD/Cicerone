@@ -36,17 +36,17 @@ abstract class AppNavigator @JvmOverloads constructor(
         }
     }
 
-    private fun applyForward(forward: Forward) {
-        createActivityIntent(activity, forward.screenKey, forward.transitionData)?.let {
-            checkAndStartActivity(forward, it)
-        }
+    private fun applyForward(command: Forward) {
+        createActivityIntent(activity, command.screenKey, command.transitionData)?.let {
+            checkAndStartActivity(command, it)
+        } ?: super.applyCommand(command)
     }
 
-    private fun applyReplace(replace: Replace) {
-        createActivityIntent(activity, replace.screenKey, replace.transitionData)?.let {
-            checkAndStartActivity(replace, it)
+    private fun applyReplace(command: Replace) {
+        createActivityIntent(activity, command.screenKey, command.transitionData)?.let {
+            checkAndStartActivity(command, it)
             activity.finish()
-        }
+        } ?: super.applyCommand(command)
     }
 
     /**

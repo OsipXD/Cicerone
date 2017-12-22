@@ -68,7 +68,7 @@ abstract class SupportFragmentNavigator(
             fragmentManager.popBackStackImmediate()
             openFragment(replace, fragment)
         } else {
-            openFragment(replace, fragment, addToBackStack = true)
+            openFragment(replace, fragment, addToBackStack = false)
         }
     }
 
@@ -121,7 +121,7 @@ abstract class SupportFragmentNavigator(
      */
     protected fun FragmentTransaction.setupAnimation(
             command: CreationalCommand,
-            currentFragment: Fragment,
+            currentFragment: Fragment?,
             nextFragment: Fragment
     ) {
         setupFragmentTransactionAnimation(command, currentFragment, nextFragment, this)
@@ -138,7 +138,7 @@ abstract class SupportFragmentNavigator(
      */
     protected open fun setupFragmentTransactionAnimation(
             command: CreationalCommand,
-            currentFragment: Fragment,
+            currentFragment: Fragment?,
             nextFragment: Fragment,
             fragmentTransaction: FragmentTransaction
     ) {
@@ -155,7 +155,7 @@ abstract class SupportFragmentNavigator(
     @Deprecated("use variant of this function with CreationalCommand instead")
     protected open fun setupFragmentTransactionAnimation(
             command: Command,
-            currentFragment: Fragment,
+            currentFragment: Fragment?,
             nextFragment: Fragment,
             fragmentTransaction: FragmentTransaction
     ) {

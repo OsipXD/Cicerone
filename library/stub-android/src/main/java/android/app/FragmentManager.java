@@ -1,5 +1,7 @@
 package android.app;
 
+import android.support.annotation.Nullable;
+
 /***
  * Created by laomo on 2016-11-21.
  */
@@ -30,6 +32,7 @@ public class FragmentManager {
 		throw new RuntimeException("Stub!");
 	}
 
+	@Nullable
 	public Fragment findFragmentById(int id) {
 		throw new RuntimeException("Stub!");
 	}
