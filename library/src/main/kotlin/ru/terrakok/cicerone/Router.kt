@@ -1,3 +1,7 @@
+/*
+ * Created by Konstantin Tskhovrebov (aka @terrakok)
+ */
+
 package ru.terrakok.cicerone
 
 import ru.terrakok.cicerone.commands.Back
@@ -13,8 +17,6 @@ import ru.terrakok.cicerone.result.ResultListener
  *
  * This implementation covers almost all cases needed for the average app.
  * Extend it if you need some tricky navigation.
- *
- * @author Konstantin Tskhovrebov (aka terrakok) on 12.10.16.
  */
 open class Router : BaseRouter() {
 
@@ -67,7 +69,7 @@ open class Router : BaseRouter() {
      */
     @JvmOverloads
     open fun navigateTo(screenKey: String, data: Any? = null) {
-        executeCommand(Forward(screenKey, data))
+        executeCommands(Forward(screenKey, data))
     }
 
     /**
@@ -79,8 +81,10 @@ open class Router : BaseRouter() {
      */
     @JvmOverloads
     open fun newScreenChain(screenKey: String, data: Any? = null) {
-        executeCommand(BackTo(null))
-        executeCommand(Forward(screenKey, data))
+        executeCommands(
+                BackTo(null),
+                Forward(screenKey, data)
+        )
     }
 
     /**
@@ -91,8 +95,10 @@ open class Router : BaseRouter() {
      */
     @JvmOverloads
     open fun newRootScreen(screenKey: String, data: Any? = null) {
-        executeCommand(BackTo(null))
-        executeCommand(Replace(screenKey, data))
+        executeCommands(
+                BackTo(null),
+                Replace(screenKey, data)
+        )
     }
 
     /**
@@ -107,7 +113,7 @@ open class Router : BaseRouter() {
      */
     @JvmOverloads
     open fun replaceScreen(screenKey: String, data: Any? = null) {
-        executeCommand(Replace(screenKey, data))
+        executeCommands(Replace(screenKey, data))
     }
 
     /**
@@ -119,7 +125,7 @@ open class Router : BaseRouter() {
      * @param screenKey screen key
      */
     open fun backTo(screenKey: String) {
-        executeCommand(BackTo(screenKey))
+        executeCommands(BackTo(screenKey))
     }
 
     /**
@@ -128,8 +134,10 @@ open class Router : BaseRouter() {
      * It's mostly used to finish the application or close a supplementary navigation chain.
      */
     open fun finishChain() {
-        executeCommand(BackTo(null))
-        executeCommand(Back())
+        executeCommands(
+                BackTo(null),
+                Back()
+        )
     }
 
     /**
@@ -139,7 +147,7 @@ open class Router : BaseRouter() {
      * the processing of the [Back] command in a [Navigator] implementation.
      */
     open fun exit() {
-        executeCommand(Back())
+        executeCommands(Back())
     }
 
     /**
@@ -159,8 +167,10 @@ open class Router : BaseRouter() {
      * @param message message to show
      */
     open fun exitWithMessage(message: String) {
-        executeCommand(Back())
-        executeCommand(SystemMessage(message))
+        executeCommands(
+                Back(),
+                SystemMessage(message)
+        )
     }
 
     /**
@@ -169,6 +179,6 @@ open class Router : BaseRouter() {
      * @param message message to show
      */
     open fun showSystemMessage(message: String) {
-        executeCommand(SystemMessage(message))
+        executeCommands(SystemMessage(message))
     }
 }

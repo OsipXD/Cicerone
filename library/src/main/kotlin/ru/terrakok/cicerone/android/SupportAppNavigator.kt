@@ -27,25 +27,17 @@ abstract class SupportAppNavigator @JvmOverloads constructor(
         containerId: Int
 ) : SupportFragmentNavigator(fragmentManager, containerId) {
 
-    override fun applyCommand(command: Command) {
-        when (command) {
-            is Forward -> applyForward(command)
-            is Replace -> applyReplace(command)
-            else -> super.applyCommand(command)
-        }
-    }
-
-    private fun applyForward(command: Forward) {
+    override fun forward(command: Forward) {
         createActivityIntent(activity, command.screenKey, command.transitionData)?.let {
             checkAndStartActivity(command, it)
-        } ?: super.applyCommand(command)
+        } ?: super.forward(command)
     }
 
-    private fun applyReplace(command: Replace) {
+    override fun replace(command: Replace) {
         createActivityIntent(activity, command.screenKey, command.transitionData)?.let {
             checkAndStartActivity(command, it)
             activity.finish()
-        } ?: super.applyCommand(command)
+        } ?: super.replace(command)
     }
 
     /**

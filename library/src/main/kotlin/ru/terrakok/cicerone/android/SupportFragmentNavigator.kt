@@ -1,3 +1,7 @@
+/*
+ * Created by Konstantin Tskhovrebov (aka @terrakok)
+ */
+
 package ru.terrakok.cicerone.android
 
 import android.support.v4.app.Fragment
@@ -12,6 +16,7 @@ import ru.terrakok.cicerone.commands.CreationalCommand
 import ru.terrakok.cicerone.commands.Forward
 import ru.terrakok.cicerone.commands.Replace
 import ru.terrakok.cicerone.commands.SystemMessage
+import java.util.*
 
 /**
  * Implementation of [Navigator] based on support fragments.
@@ -23,7 +28,6 @@ import ru.terrakok.cicerone.commands.SystemMessage
  *
  * @param fragmentManager support fragment manager
  * @param containerId     id of the fragments container layout
- * @author Konstantin Tskhovrebov (aka terrakok) on 11.10.16.
  * @see FragmentNavigator
  */
 abstract class SupportFragmentNavigator(
@@ -31,44 +35,58 @@ abstract class SupportFragmentNavigator(
         private val containerId: Int
 ) : Navigator {
 
-    override fun applyCommand(command: Command) {
+    private lateinit var localStackCopy: LinkedList<String>
+
+    override fun applyCommands(commands: Array<out Command>) {
+        fragmentManager.executePendingTransactions()
+
+        //copy stack structure before apply commands
+        val stackSize = fragmentManager.backStackEntryCount
+        localStackCopy = LinkedList()
+        for (i in 0 until stackSize) {
+            localStackCopy.add(fragmentManager.getBackStackEntryAt(i).name)
+        }
+
+        commands.forEach(this::applyCommand)
+    }
+
+    protected fun applyCommand(command: Command) {
         when (command) {
-            is Forward -> applyForward(command)
-            is Back -> applyBack()
-            is Replace -> applyReplace(command)
-            is BackTo -> applyBackTo(command)
+            is Forward -> forward(command)
+            is Back -> back()
+            is Replace -> replace(command)
+            is BackTo -> backTo(command)
             is SystemMessage -> showSystemMessage(command.message)
         }
     }
 
-    private fun applyForward(forward: Forward) {
-        val fragment = createFragment(forward.screenKey, forward.transitionData)
-        if (fragment != null) {
-            openFragment(forward, fragment)
-        } else {
-            unknownScreen(forward)
-        }
+    protected open fun forward(command: Forward) {
+        createFragment(command.screenKey, command.transitionData)?.let { fragment ->
+            openFragment(command, fragment)
+        } ?: unknownScreen(command)
     }
 
-    private fun applyBack() {
-        if (fragmentManager.backStackEntryCount > 0) {
-            fragmentManager.popBackStackImmediate()
+    protected open fun back() {
+        if (localStackCopy.size > 0) {
+            fragmentManager.popBackStack()
+            localStackCopy.pop()
         } else {
             exit()
         }
     }
 
-    private fun applyReplace(replace: Replace) {
-        val fragment = createFragment(replace.screenKey, replace.transitionData) ?: run {
-            unknownScreen(replace)
+    protected open fun replace(command: Replace) {
+        val fragment = createFragment(command.screenKey, command.transitionData) ?: run {
+            unknownScreen(command)
             return
         }
 
-        if (fragmentManager.backStackEntryCount > 0) {
-            fragmentManager.popBackStackImmediate()
-            openFragment(replace, fragment)
+        if (localStackCopy.size > 0) {
+            fragmentManager.popBackStack()
+            localStackCopy.pop()
+            openFragment(command, fragment)
         } else {
-            openFragment(replace, fragment, addToBackStack = false)
+            openFragment(command, fragment, addToBackStack = false)
         }
     }
 
@@ -97,7 +115,10 @@ abstract class SupportFragmentNavigator(
             )
 
             replace(containerId, fragment)
-            if (addToBackStack) addToBackStack(command.screenKey)
+            if (addToBackStack) {
+                addToBackStack(command.screenKey)
+                localStackCopy.add(command.screenKey)
+            }
         }
     }
 
@@ -162,18 +183,16 @@ abstract class SupportFragmentNavigator(
         // Do nothing by default
     }
 
-    private fun applyBackTo(backTo: BackTo) {
-        backTo.screenKey?.let { key ->
-            var hasScreen = false
-            for (i in 0 until fragmentManager.backStackEntryCount) {
-                if (key == fragmentManager.getBackStackEntryAt(i).name) {
-                    fragmentManager.popBackStackImmediate(key, 0)
-                    hasScreen = true
-                    break
+    protected open fun backTo(command: BackTo) {
+        command.screenKey?.let { key ->
+            val i = localStackCopy.indexOf(key)
+            if (i != -1) {
+                val size = localStackCopy.size
+                for (j in 1 until size - i) {
+                    localStackCopy.pop()
                 }
-            }
-
-            if (!hasScreen) {
+                fragmentManager.popBackStack(key, 0)
+            } else {
                 backToUnexisting()
             }
         } ?: backToRoot()
@@ -187,7 +206,8 @@ abstract class SupportFragmentNavigator(
     }
 
     private fun backToRoot() {
-        fragmentManager.popBackStackImmediate(null, android.app.FragmentManager.POP_BACK_STACK_INCLUSIVE)
+        fragmentManager.popBackStack(null, FragmentManager.POP_BACK_STACK_INCLUSIVE)
+        localStackCopy.clear()
     }
 
     /**

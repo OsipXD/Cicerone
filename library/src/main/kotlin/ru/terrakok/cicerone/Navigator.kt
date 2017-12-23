@@ -1,3 +1,7 @@
+/*
+ * Created by Konstantin Tskhovrebov (aka @terrakok)
+ */
+
 package ru.terrakok.cicerone
 
 import ru.terrakok.cicerone.commands.Command
@@ -5,15 +9,13 @@ import ru.terrakok.cicerone.commands.Command
 /**
  * The low-level navigation interface.
  * Navigator is the one who actually performs any transition.
- *
- * @author Konstantin Tskhovrebov (aka terrakok) on 11.10.16
  */
 interface Navigator {
 
     /**
-     * Performs transition described by the navigation command
+     * Performs transition described by navigation commands
      *
-     * @param command the navigation command to apply
+     * @param commands navigation commands array to apply per single transaction
      */
-    fun applyCommand(command: Command)
+    fun applyCommands(commands: Array<out Command>)
 }

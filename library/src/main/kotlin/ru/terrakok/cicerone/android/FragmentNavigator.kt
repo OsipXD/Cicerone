@@ -1,3 +1,7 @@
+/*
+ * Created by Konstantin Tskhovrebov (aka @terrakok)
+ */
+
 package ru.terrakok.cicerone.android
 
 import android.app.Fragment
@@ -12,6 +16,7 @@ import ru.terrakok.cicerone.commands.CreationalCommand
 import ru.terrakok.cicerone.commands.Forward
 import ru.terrakok.cicerone.commands.Replace
 import ru.terrakok.cicerone.commands.SystemMessage
+import java.util.*
 
 /**
  * Implementation of [Navigator] based on fragments.
@@ -23,7 +28,6 @@ import ru.terrakok.cicerone.commands.SystemMessage
  *
  * @param fragmentManager fragment manager
  * @param containerId     id of the fragments container layout
- * @author Konstantin Tskhovrebov (aka terrakok) on 11.10.16.
  * @see SupportFragmentNavigator
  */
 abstract class FragmentNavigator(
@@ -31,41 +35,55 @@ abstract class FragmentNavigator(
         private val containerId: Int
 ) : Navigator {
 
-    override fun applyCommand(command: Command) {
+    private lateinit var localStackCopy: LinkedList<String>
+
+    override fun applyCommands(commands: Array<out Command>) {
+        fragmentManager.executePendingTransactions()
+
+        //copy stack structure before apply commands
+        val stackSize = fragmentManager.backStackEntryCount
+        localStackCopy = LinkedList()
+        for (i in 0 until stackSize) {
+            localStackCopy.add(fragmentManager.getBackStackEntryAt(i).name)
+        }
+
+        commands.forEach(this::applyCommand)
+    }
+
+    protected fun applyCommand(command: Command) {
         when (command) {
-            is Forward -> applyForward(command)
-            is Back -> applyBack()
-            is Replace -> applyReplace(command)
-            is BackTo -> applyBackTo(command)
+            is Forward -> forward(command)
+            is Back -> back()
+            is Replace -> replace(command)
+            is BackTo -> backTo(command)
             is SystemMessage -> showSystemMessage(command.message)
         }
     }
 
-    private fun applyForward(command: Forward) {
-        val fragment = createFragment(command.screenKey, command.transitionData)
-        if (fragment != null) {
+    protected open fun forward(command: Forward) {
+        createFragment(command.screenKey, command.transitionData)?.let { fragment ->
             openFragment(command, fragment)
-        } else {
-            unknownScreen(command)
-        }
+        } ?: unknownScreen(command)
     }
 
-    private fun applyBack() {
-        if (fragmentManager.backStackEntryCount > 0) {
-            fragmentManager.popBackStackImmediate()
+    protected open fun back() {
+        if (localStackCopy.size > 0) {
+            fragmentManager.popBackStack()
+            localStackCopy.pop()
         } else {
             exit()
         }
     }
 
-    private fun applyReplace(command: Replace) {
+    protected open fun replace(command: Replace) {
         val fragment = createFragment(command.screenKey, command.transitionData) ?: run {
             unknownScreen(command)
             return
         }
 
-        if (fragmentManager.backStackEntryCount > 0) {
-            fragmentManager.popBackStackImmediate()
+        if (localStackCopy.size > 0) {
+            fragmentManager.popBackStack()
+            localStackCopy.pop()
             openFragment(command, fragment)
         } else {
             openFragment(command, fragment, addToBackStack = false)
@@ -97,7 +115,10 @@ abstract class FragmentNavigator(
             )
 
             replace(containerId, fragment)
-            if (addToBackStack) addToBackStack(command.screenKey)
+            if (addToBackStack) {
+                addToBackStack(command.screenKey)
+                localStackCopy.add(command.screenKey)
+            }
         }
     }
 
@@ -162,18 +183,16 @@ abstract class FragmentNavigator(
         // Do nothing by default
     }
 
-    private fun applyBackTo(command: BackTo) {
+    protected open fun backTo(command: BackTo) {
         command.screenKey?.let { key ->
-            var hasScreen = false
-            for (i in 0 until fragmentManager.backStackEntryCount) {
-                if (key == fragmentManager.getBackStackEntryAt(i).name) {
-                    fragmentManager.popBackStackImmediate(key, 0)
-                    hasScreen = true
-                    break
+            val i = localStackCopy.indexOf(key)
+            if (i != -1) {
+                val size = localStackCopy.size
+                for (j in 1 until size - i) {
+                    localStackCopy.pop()
                 }
-            }
-
-            if (!hasScreen) {
+                fragmentManager.popBackStack(key, 0)
+            } else {
                 backToUnexisting()
             }
         } ?: backToRoot()
@@ -187,7 +206,8 @@ abstract class FragmentNavigator(
     }
 
     private fun backToRoot() {
-        fragmentManager.popBackStackImmediate(null, FragmentManager.POP_BACK_STACK_INCLUSIVE)
+        fragmentManager.popBackStack(null, FragmentManager.POP_BACK_STACK_INCLUSIVE)
+        localStackCopy.clear()
     }
 
     /**

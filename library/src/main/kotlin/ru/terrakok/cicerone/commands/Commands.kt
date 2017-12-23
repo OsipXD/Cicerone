@@ -1,10 +1,12 @@
+/*
+ * Created by Konstantin Tskhovrebov (aka @terrakok)
+ */
+
 package ru.terrakok.cicerone.commands
 
 
 /**
  * Rolls back the last transition from the screens chain.
- *
- * @author Konstantin Tskhovrebov (aka terrakok) on 11.10.16.
  */
 class Back : Command
 
@@ -16,7 +18,6 @@ class Back : Command
  * But the recommended behavior is to return to the root.
  *
  * @param screenKey screen key or null if you need back to root screen
- * @author Konstantin Tskhovrebov (aka terrakok) on 11.10.16.
  */
 class BackTo(val screenKey: String?) : Command
 
@@ -26,7 +27,6 @@ class BackTo(val screenKey: String?) : Command
  *
  * @param screenKey      screen key
  * @param transitionData initial data, can be null
- * @author Konstantin Tskhovrebov (aka terrakok) on 11.10.16.
  */
 class Forward(override val screenKey: String, override val transitionData: Any?) : CreationalCommand
 
@@ -36,7 +36,6 @@ class Forward(override val screenKey: String, override val transitionData: Any?)
  *
  * @param screenKey      screen key
  * @param transitionData initial data, can be null
- * @author Konstantin Tskhovrebov (aka terrakok) on 11.10.16.
  */
 class Replace(override val screenKey: String, override val transitionData: Any?) : CreationalCommand
 
@@ -45,6 +44,5 @@ class Replace(override val screenKey: String, override val transitionData: Any?)
  * Shows system message.
  *
  * @param message message text
- * @author Konstantin Tskhovrebov (aka terrakok) on 11.10.16.
  */
 class SystemMessage(val message: String) : Command

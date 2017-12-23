@@ -1,10 +1,12 @@
+/*
+ * Created by Konstantin Tskhovrebov (aka @terrakok)
+ */
+
 package ru.terrakok.cicerone
 
 /**
  * Navigator holder interface.
  * Use it to connect a [Navigator] to the [Cicerone].
- *
- * @author Konstantin Tskhovrebov (aka terrakok) on 11.10.16.
  */
 interface NavigatorHolder {
 

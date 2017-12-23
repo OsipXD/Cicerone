@@ -1,8 +1,9 @@
+/*
+ * Created by Konstantin Tskhovrebov (aka @terrakok)
+ */
+
 package ru.terrakok.cicerone.result
 
-/**
- * @author Konstantin Tskhovrebov (aka terrakok) on 04.07.17.
- */
 interface ResultListener {
 
     /**

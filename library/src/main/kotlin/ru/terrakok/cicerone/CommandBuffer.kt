@@ -1,3 +1,7 @@
+/*
+ * Created by Konstantin Tskhovrebov (aka @terrakok)
+ */
+
 package ru.terrakok.cicerone
 
 import ru.terrakok.cicerone.commands.Command
@@ -6,20 +10,18 @@ import java.util.*
 /**
  * Passes navigation command to an active [Navigator]
  * or stores it in the pending commands queue to pass it later.
- *
- * @author Konstantin Tskhovrebov (aka terrakok) on 12.10.16.
  */
 internal class CommandBuffer : NavigatorHolder {
 
     private var navigator: Navigator? = null
-    private val pendingCommands = LinkedList<Command>()
+    private val pendingCommands = LinkedList<Array<out Command>>()
 
     override fun setNavigator(navigator: Navigator?) {
         this.navigator = navigator
 
         while (!pendingCommands.isEmpty()) {
             if (navigator == null) break
-            executeCommand(pendingCommands.pop())
+            executeCommands(pendingCommands.poll())
         }
     }
 
@@ -28,12 +30,12 @@ internal class CommandBuffer : NavigatorHolder {
     }
 
     /**
-     * Passes [command] to the [Navigator] if it available.
+     * Passes [commands] to the [Navigator] if it available.
      * Else puts it to the pending commands queue to pass it later.
      *
-     * @param command navigation command
+     * @param commands navigation commands array
      */
-    fun executeCommand(command: Command) {
-        navigator?.applyCommand(command) ?: pendingCommands.add(command)
+    fun executeCommands(commands: Array<out Command>) {
+        navigator?.applyCommands(commands) ?: pendingCommands.add(commands)
     }
 }

@@ -1,3 +1,7 @@
+/*
+ * Created by Konstantin Tskhovrebov (aka @terrakok)
+ */
+
 package ru.terrakok.cicerone
 
 /**
@@ -7,7 +11,6 @@ package ru.terrakok.cicerone
  *
  * @param T type of router. You can use the default [Router] or pass your own
  * [BaseRouter] implementation.
- * @author Konstantin Tskhovrebov (aka terrakok) on 11.10.16.
  */
 class Cicerone<out T : BaseRouter> private constructor(val router: T) {
 

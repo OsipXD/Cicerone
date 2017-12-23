@@ -16,6 +16,7 @@ import javax.inject.Inject;
 import ru.terrakok.cicerone.Navigator;
 import ru.terrakok.cicerone.NavigatorHolder;
 import ru.terrakok.cicerone.android.SupportAppNavigator;
+import ru.terrakok.cicerone.commands.Command;
 import ru.terrakok.cicerone.commands.CreationalCommand;
 import ru.terrakok.cicerone.commands.Forward;
 import ru.terrakok.cicerone.commands.Replace;
@@ -81,7 +82,7 @@ public class ProfileActivity extends AppCompatActivity {
 
         @Override
         protected void setupFragmentTransactionAnimation(@NonNull CreationalCommand command,
-                                                         @NonNull Fragment currentFragment,
+                                                         Fragment currentFragment,
                                                          @NonNull Fragment nextFragment,
                                                          @NonNull FragmentTransaction fragmentTransaction) {
             if (command instanceof Forward
