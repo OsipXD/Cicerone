@@ -5,12 +5,12 @@ repositories {
 }
 
 android {
-    compileSdkVersion 25
-    buildToolsVersion '26.0.2'
+    compileSdkVersion 27
+    buildToolsVersion '27.0.3'
 
     defaultConfig {
         minSdkVersion 19
-        targetSdkVersion 25
+        targetSdkVersion 27
         versionCode 1
         versionName "1.0.0"
         applicationId "ru.terrakok.cicerone.sample"
@@ -28,9 +28,9 @@ android {
 }
 
 ext {
-    supportLibraryVersion = "25.3.0"
-    moxyVersion = "1.4.6"
-    daggerVersion = "2.10"
+    supportLibraryVersion = "27.1.1"
+    moxyVersion = "1.5.3"
+    daggerVersion = "2.16"
 }
 
 dependencies {
@@ -44,7 +44,7 @@ dependencies {
     annotationProcessor "com.arello-mobile:moxy-compiler:$moxyVersion"
 
     //Cicerone
-    compile project(':library')
+    implementation project(':library')
 
     //DI
     implementation "com.google.dagger:dagger:$daggerVersion"
